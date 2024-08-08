@@ -11,10 +11,17 @@ const (
 )
 
 func main() {
-	handler := http.NewServeMux()
-	handler.Handle("/", http.FileServer(http.Dir(FILEPATHROOT)))
+	mux := http.NewServeMux()
+	mux.Handle("/app/*", http.StripPrefix("/app", http.FileServer(http.Dir(FILEPATHROOT))))
+
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("charset", "utf-8")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Ok"))
+	})
 	server := &http.Server{
-		Handler: handler,
+		Handler: mux,
 		Addr:    ":" + PORT,
 	}
 
